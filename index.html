@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catherine T. Orbe - Portfolio</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: #f8f8f8;
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+      z-index: 100;
+    }
+    header img {
+      width: 100px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    main {
+      padding: 0;
+    }
+    .scroll-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 20px;
+      padding: 10px;
+    }
+    .scroll-container video,
+    .scroll-container img {
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    section {
+        max-width: 800px;
+        margin: 50px auto 20px auto; /* Increased top margin */
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    form input, form textarea, form button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1rem;
+    }
+    .review {
+      /* border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px; */
+      background: #f3f0fa; border-left: 5px solid #c0afd5; padding: 16px 24px; border-radius: 8px; margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="photo/IMG_1983.jpg" alt="Catherine's Photo" />
+    <h1>Catherine T. Orbe</h1>
+    <p style="font-style: italic;">IT Graduate</p>
+    <p>Organized. Reliable. Resourceful.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>About Me</h2>
+      <ul>
+        <li>I’m detail-oriented and fast-learning</li>
+        <li>I manage documents after training</li>
+        <li>I print files and prepare them for use</li>
+        <li>I encode documents from hard copy to soft copy</li>
+        <li>I enjoy solving problems and learning new tools</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What I Can Do</h2>
+      <ul>
+        <li>✅ Document filing and organizing (digital or physical)</li>
+        <li>🖨️ Printing and preparing documents</li>
+        <li>🧾 Encoding documents (hard copy ➡ soft copy)</li>
+        <li>🔍 Finding alternative tools or methods when needed</li>
+        <li>📚 Quick to learn new software or procedures</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Tools I Use</h2>
+      <ul>
+        <li>📄 Microsoft Word</li>
+        <li>🌐 Google Workspace (Docs, Sheets, Drive)</li>
+        <li>🤖 ChatGPT</li>
+        <li>🎨 Canva</li>
+        <li>🎬 Microsoft Clipchamp</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>My Work</h2>
+      <div class="scroll-container">
+        <video width="300" height="300" controls>
+          <source src="video/Draft.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <img src="photo/filelabel.png" alt="File label design" width="300">
+      </div>
+    </section>
+
+    <section>
+      <h2>Feedback / Review</h2>
+      <div>
+      <div>
+      <form id="review-form">
+        <input type="text" id="author" placeholder="Your Name" required />
+        <textarea id="text" rows="4" placeholder="Write your message..." required></textarea>
+        <button type="submit">Submit Review</button>
+      </form>
+      </div>
+      <div id="reviews"></div>
+      
+      </div>
+    </section>
+  </main>
+
+  <!-- Supabase JS v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const supabaseUrl = 'https://vlfxibagktkzrssnexxt.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsZnhpYmFna3RrenJzc25leHh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDM3MjgsImV4cCI6MjA2OTE3OTcyOH0.MeNRUycWuAhR7Q4sL-sBQ8PWanT6CFVnZi0uwVdCM3s';
+      const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+      const reviewForm = document.getElementById('review-form');
+      const reviewsDiv = document.getElementById('reviews');
+
+      async function loadReviews() {
+        const { data, error } = await client.from('reviews').select('*').order('id', { ascending: false });
+        if (error) {
+          console.error(error);
+          return;
+        }
+
+        reviewsDiv.innerHTML = '';
+        data.forEach((review) => {
+          const div = document.createElement('div');
+          div.className = 'review';
+          div.innerHTML = `<strong>${review.author}</strong><p>${review.text}</p>`;
+          reviewsDiv.appendChild(div);
+        });
+      }
+
+      reviewForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const author = document.getElementById('author').value;
+        const text = document.getElementById('text').value;
+
+        const { error } = await client.from('reviews').insert([{ author, text }]);
+        if (error) {
+          alert('Error submitting review.');
+          console.error(error);
+        } else {
+          reviewForm.reset();
+          loadReviews();
+        }
+      });
+
+      loadReviews();
+    });
+  </script>
+</body>
+</html>
